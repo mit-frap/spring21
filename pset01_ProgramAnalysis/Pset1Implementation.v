@@ -1,6 +1,6 @@
 (** * 6.822 Formal Reasoning About Programs, Spring 2021 - Pset 1 *)
 
-(* Welcome to 6.822!  Read through `Signature.v` before starting here. *)
+(* Welcome to 6.822!  Read through `Pset1Signature.v` before starting here. *)
 
 Require Import Frap Pset1Signature.
 
