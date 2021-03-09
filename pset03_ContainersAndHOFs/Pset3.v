@@ -6,7 +6,7 @@ Require Import Pset3Sig.
 Module Impl.
   (* In this pset, we will practice two topics:
      1) Polymorphic container types, i.e. types which are parametrized by a
-        type, such as "option A", "list A", "tree A", and finally, "binary_trie A",
+        type, such as "option A", "list A", "tree A", and finally, "bitwise_trie A",
         which combines option and tree to obtain a new useful data structure.
      2) Higher-order functions (HOFs), i.e. functions which take other functions
         as arguments.
