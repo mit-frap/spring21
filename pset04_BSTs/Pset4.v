@@ -85,8 +85,9 @@ Module Impl.
       | r => r
       end
     end.
-  Definition is_leaf (tr : tree) : bool :=
-    match tr with Leaf => true | _ => false end.
+  Locate "{ _ } + { _ }".
+  Definition is_leaf (tr : tree) : sumbool (tr = Leaf) (tr <> Leaf).
+  Proof. cases tr; [ left | right ]; equality. Defined.
   Fixpoint delete_rightmost (tr: tree) : tree :=
     match tr with
     | Leaf => Leaf

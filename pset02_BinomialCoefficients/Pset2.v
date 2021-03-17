@@ -331,56 +331,71 @@ Module Impl.
   Lemma C_is_integer: forall n k, k <= n ->
       (((n - k)! * k!) | n!).
   Proof.
-    induct n.
-    - simplify.
-      replace k with 0 by linear_arithmetic.
-      simplify.
-  (* How can we prove that 1 divides 1? It probably follows immediately from the
-     definition of divisibility, so let's try to unfold it.  We can do
+    induct n; simplify.
 
-      Locate "|".
+    - replace k with 0 by linear_arithmetic.
+      Search (1 * _).
+      rewrite N.mul_1_l; simplify.
+      Search (?a | ?a).
+      apply N.divide_refl.
 
-     The output of this command shows us all notations involving "|", and the last
-     one (N.divide) is the one we want. So we just unfold that one: *)
-      unfold N.divide.
-      exists 1. equality.
-    - simplify. unfold N.divide in *.
-      assert (k = 0 \/ k = n + 1 \/ 1 <= k <= n) as C by linear_arithmetic. cases C.
-      + subst.
-        replace (n + 1 - 0) with (n + 1) by linear_arithmetic.
-        replace (0!) with 1 by equality.
-        exists 1.
-        linear_arithmetic.
-      + subst.
-        replace (n + 1 - (n + 1)) with 0 by linear_arithmetic.
-        replace (0!) with 1 by equality.
-        exists 1. linear_arithmetic.
-      + pose proof (IHn k) as IH1.
-        assert (k <= n) as A by linear_arithmetic. specialize (IH1 A). invert IH1.
-        pose proof (IHn (k - 1)) as IH2.
-        assert (k - 1 <= n) as B by linear_arithmetic. specialize (IH2 B). invert IH2.
-        replace (n - (k - 1)) with (n - k + 1) in H1 by linear_arithmetic.
-        unfold_recurse fact n.
-        replace (k!) with ((k - 1 + 1)!) in *.
-        2: { f_equal. linear_arithmetic. }
-        unfold_recurse fact (k - 1).
-        replace (k - 1 + 1) with k in * by linear_arithmetic.
-        apply N.mul_cancel_r with (p := n - k + 1) in H0. 2: linear_arithmetic.
-        apply N.mul_cancel_r with (p := k) in H1. 2: linear_arithmetic.
-        assert (forall l1 r1 l2 r2, l1 = r1 -> l2 = r2 -> l1 + l2 = r1 + r2) as E. {
-          simplify. linear_arithmetic.
-        }
-        specialize E with (1 := H0) (2 := H1).
-        replace (n! * (n - k + 1) + n! * k) with ((n + 1) * n!) in E by nia.
-        rewrite E.
-        replace (n + 1 - k) with (n - k + 1) by linear_arithmetic.
-        unfold_recurse fact (n - k).
-        remember ((n - k)!) as F1.
-        remember ((k - 1)!) as F2.
-        remember (n - k + 1) as F3.
-        remember k as F4.
-        exists (x + x0).
-        nia.
+    - (* We want to use the induction hypothesis, but it is not directly
+         applicable to [k], since [k] could be equal to [n + 1]. *)
+      assert (k = 0 \/ k = n + 1 \/ 0 < k <= n) as Hk by linear_arithmetic;
+        cases Hk; subst; simplify.
+
+      + rewrite N.sub_0_r, N.mul_1_r.
+        apply N.divide_refl.
+
+      + rewrite N.sub_diag; simplify.
+        rewrite N.mul_1_l.
+        apply N.divide_refl.
+
+      + (* The key idea is to use the induction hypothesis twice. *)
+        assert (k <= n) as Hle by linear_arithmetic.
+        pose proof (IHn k Hle) as Hdk.
+
+        assert (k - 1 <= n) as Hle1 by linear_arithmetic.
+        pose proof (IHn (k - 1) Hle1) as Hdk1.
+
+        (* How can we use facts about divisibility?
+           Unfolding the definition helps: *)
+        (* Locate "|". (* Notation "( p | q )" := (N.divide p q) *) *)
+        (* unfold N.divide in *. *)
+
+        (* [invert] will give us a concrete value instead of an existential: *)
+        (* invert Hdk; invert Hdk1. *)
+
+        (* Next we proceed to harmonize the divisors to be able to sum them. *)
+        Search (_ * _ | _ * _).
+
+        (* The first equation is missing a (n - k + 1) factor *)
+        apply N.mul_divide_mono_l with (p := n + 1 - k) in Hdk.
+        replace ((n + 1 - k) * ((n - k)! * k!))
+          with ((n + 1 - k)! * k!) in Hdk; cycle 1.
+        { replace (n + 1 - k) with (n - k + 1) by linear_arithmetic.
+          unfold_recurse fact (n - k).
+          replace (n - k + 1) with (n + 1 - k) by linear_arithmetic.
+          linear_arithmetic. }
+
+        (* The second is missing a (k) factor *)
+        apply N.mul_divide_mono_l with (p := k) in Hdk1.
+        replace (n - (k - 1)) with (n + 1 - k) in Hdk1
+          by linear_arithmetic.
+        replace (k * ((n + 1 - k)! * (k - 1)!))
+          with ((n + 1 - k)! * k!) in Hdk1; cycle 1.
+        { replace k with (k - 1 + 1) at 2 by linear_arithmetic.
+          unfold_recurse fact (k - 1).
+          replace (k - 1 + 1) with k by linear_arithmetic.
+          linear_arithmetic. }
+
+        (* Now we can sum the equations: *)
+        Search (_ | _ + _).
+        pose proof N.divide_add_r _ _ _ Hdk Hdk1 as Hd.
+        replace ((n + 1 - k) * n! + k * n!) with ((n + 1)!) in Hd; cycle 1.
+        { unfold_recurse fact n. nia. }
+
+        equality.
   Qed.
 
   (* Now we're ready to prove correctness of our optimized implementation bcoeff.
@@ -437,7 +452,7 @@ Module Impl.
   Here we go: *)
   Lemma bcoeff_correct: forall n k, k <= n -> bcoeff n k = C n k.
   Proof.
-    induct k.
+    induct k; simplify.
   Admitted.
 
 
