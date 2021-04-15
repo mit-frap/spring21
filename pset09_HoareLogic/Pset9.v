@@ -650,7 +650,7 @@ Goal mailbox_done
         Out 41; In 18; In 5;
         (* Second request: put 11 at address 3 (returns 0) *)
         Out 0; In 11; In 3;
-        (* First request: put 5 at address 41 (returns 0) *)
+        (* First request: put 41 at address 5 (returns 0) *)
         Out 0; In 41; In 5].
 Proof.
   econstructor.
