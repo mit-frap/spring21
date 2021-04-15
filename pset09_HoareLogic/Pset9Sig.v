@@ -240,8 +240,8 @@ Module Type S.
      output "x";;
      {{ inv }}
      while "cnt" < "n" loop
+       "cnt" <- 1 + "cnt";;
        "x" <- "x" * "cnt";;
-       "cnt" <- "cnt" + 1;;
        output "x"
      done)%cmd.
 
@@ -249,7 +249,7 @@ Module Type S.
   | FactInit: fact_spec 0 [Out 1]
   | FactRec: forall x n tr,
       fact_spec n (Out x :: tr) ->
-      fact_spec (n + 1) (Out (x * n) :: Out x :: tr).
+      fact_spec (S n) (Out (x * S n) :: Out x :: tr).
 
   Parameter fact_invariant : forall (n: nat), assertion.
 

@@ -550,8 +550,8 @@ Example fact inv :=
    output "x";;
    {{ inv }}
    while "cnt" < "n" loop
+     "cnt" <- 1 + "cnt";;
      "x" <- "x" * "cnt";;
-     "cnt" <- "cnt" + 1;;
      output "x"
    done)%cmd.
 
@@ -559,7 +559,7 @@ Inductive fact_spec : nat -> trace -> Prop :=
 | FactInit: fact_spec 0 [Out 1]
 | FactRec: forall x n tr,
     fact_spec n (Out x :: tr) ->
-    fact_spec (n + 1) (Out (x * n) :: Out x :: tr).
+    fact_spec (S n) (Out (x * S n) :: Out x :: tr).
 
 Definition fact_invariant (n: nat) : assertion :=
    fun/inv _ _ _ => True.
@@ -573,6 +573,19 @@ Theorem fact_ok (n: nat):
   <{ fun/inv tr' _ _ => fact_spec n tr' }>.
 Proof.
 Admitted.
+
+Fixpoint fact_rec (n: nat) :=
+  match n with
+  | 0 => 1
+  | S n => fact_rec n * S n
+  end.
+
+(* Sanity check: *)
+Lemma fact_spec_fact_rec : forall n hd tl,
+    fact_spec n (Out hd :: tl) -> fact_rec n = hd.
+Proof.
+  induct 1; simplify; equality.
+Qed.
 
 (*|
 Heap-manipulating programs
