@@ -516,7 +516,7 @@ Inductive fibonacci_spec : trace -> Prop :=
     fibonacci_spec (Out (x + y) :: Out y :: Out x :: tr).
 
 (*|
-Here's the definition of the loop invariant:
+Here's the definition of the loop invariant that you will have to modify to complete the proof:
 |*)
 
 Definition fibonacci_invariant (n: nat) : assertion :=
